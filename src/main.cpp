@@ -77,6 +77,12 @@ int main() {
           {
             auto params = twiddle.GetParams();
             pid.Init(params[0], params[1], params[2]);
+
+            auto restart_simulator = [&ws]() {
+                std::string reset_msg = "42[\"reset\",{}]";
+                ws.send(reset_msg.data(), reset_msg.length(), uWS::OpCode::TEXT);
+              };
+            restart_simulator();
           }
 
           // DEBUG
