@@ -17,13 +17,15 @@ class PID {
    * Initialize PID.
    * @param (Kp_, Ki_, Kd_) The initial PID coefficients
    */
-  void Init(double Kp_, double Ki_, double Kd_);
+  virtual void Init(double Kp_, double Ki_, double Kd_);
 
   /**
    * Update the PID error variables given cross track error.
    * @param cte The current cross track error
    */
-  void UpdateError(double cte);
+  virtual void UpdateError(double cte);
+
+  virtual bool CheckUpdate() { return false; }
 
   /**
    * Calculate the total PID error.

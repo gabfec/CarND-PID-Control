@@ -1,27 +1,27 @@
 #ifndef Twiddle_H
 #define Twiddle_H
 
+#include "PID.h"
 #include <array>
 
-class Twiddle {
+class Twiddle : public PID
+{
  public:
   /**
    * Constructor
    */
-  explicit Twiddle(double tolerance);
+  Twiddle(double tolerance = 0.001);
 
   /**
    * Destructor.
    */
   virtual ~Twiddle() = default;
 
-  bool HasNewParams() {return _params_changed;};
+  virtual void Init(double Kp_, double Ki_, double Kd_);
 
-  void UpdateError(double cte);
+  virtual void UpdateError(double cte);
 
-  std::array<double, 3>  GetParams();
-
-  //void NeedRerun() {}
+  virtual bool CheckUpdate();
 
  private:
   bool NeedUpdate();
@@ -40,9 +40,8 @@ class Twiddle {
   State _state = STATE_INIT;
   bool _params_changed = false;
 
-
-  std::array<double, 3> params{.1, 0, 1};
-  std::array<double, 3> dparams{.01, 0, .1};
+  std::array<double, 3> params;
+  std::array<double, 3> dparams;
 };
 
 #endif  // Twiddle_H

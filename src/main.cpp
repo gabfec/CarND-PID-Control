@@ -31,14 +31,22 @@ string hasData(string s) {
   return "";
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   uWS::Hub h;
 
-  PID pid;
-  pid.Init(0.1, 0.0, 1);
-  Twiddle twiddle(.001);
+  std::unique_ptr<PID> pid ;
 
-  h.onMessage([&pid, &twiddle](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  if (argc == 1) {
+    pid = std::make_unique<PID>();
+    std::cout << "Run PID without twiddle\n";
+  } else {
+    pid = std::make_unique<Twiddle>();
+    std::cout << "Run PID with twiddle\n";
+  }
+
+  pid->Init(0.1, 0.004, 1);
+
+  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -63,8 +71,8 @@ int main() {
            * NOTE: Feel free to play around with the throttle and speed.
            *   Maybe use another PID controller to control the speed!
            */
-          pid.UpdateError(cte);
-          steer_value = pid.TotalError();
+          pid->UpdateError(cte);
+          steer_value = pid->TotalError();
 
           // steering value shuld be in [-1, 1] range
           if (steer_value > 1)
@@ -72,12 +80,9 @@ int main() {
           else if (steer_value < -1)
             steer_value = -1;
 
-          twiddle.UpdateError(cte);
-          if (twiddle.HasNewParams())
+          if (pid->CheckUpdate())
           {
-            auto params = twiddle.GetParams();
-            pid.Init(params[0], params[1], params[2]);
-
+            // Reset the simulator
             auto restart_simulator = [&ws]() {
                 std::string reset_msg = "42[\"reset\",{}]";
                 ws.send(reset_msg.data(), reset_msg.length(), uWS::OpCode::TEXT);

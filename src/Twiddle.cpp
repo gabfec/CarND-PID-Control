@@ -9,7 +9,15 @@ Twiddle::Twiddle(double tolerance) :
   _best_err = std::numeric_limits<int>::max();
 }
 
-constexpr auto N = 100;
+void Twiddle::Init(double Kp_, double Ki_, double Kd_)
+{
+  PID::Init(Kp_, Ki_, Kd_);
+
+  params = {Kp_, Ki_, Kd_};
+  dparams = {Kp_/10, Ki_/10, Kd_/10};
+}
+
+constexpr auto N = 200;
 
 bool Twiddle::NeedUpdate()
 {
@@ -18,6 +26,8 @@ bool Twiddle::NeedUpdate()
 
 void Twiddle::UpdateError(double cte)
 {
+  PID::UpdateError(cte);
+
   //Ignore the first N reading
   if (not NeedUpdate())
     return;
@@ -84,6 +94,7 @@ void Twiddle::UpdateError(double cte)
         if (_i == 1) _i++;
       }
     }  while (_state == STATE_INIT);
+
     _params_changed = true;
 
     std::cout << "i=" << _i << " state=" << _state << " ==> " << params[0] << " " << params[1] << " " << params[2] << std::endl;
@@ -91,8 +102,16 @@ void Twiddle::UpdateError(double cte)
   _iter++;
 }
 
-std::array<double, 3>  Twiddle::GetParams()
+bool  Twiddle::CheckUpdate()
 {
-  _params_changed = false;
-  return params;
+  if (_params_changed)
+  {
+    _params_changed = false;
+
+    // Update PID params
+    PID::Init(params[0], params[1], params[2]);
+
+    return true;
+  }
+  return false;
 }
