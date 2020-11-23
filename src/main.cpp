@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Run PID with twiddle\n";
   }
 
-  pid->Init(0.1, 0.004, 1);
+  pid->Init(0.123793, 0.001, 0.814562);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
